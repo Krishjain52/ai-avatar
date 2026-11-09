@@ -1,15 +1,15 @@
 # AI Avatar — Plan
 
 ## Goal
-An animated 2D character that lives on the desktop. Click it → a chat bubble opens → describe what you're looking for → it finds matching files on the Mac and shows them as clickable results.
+An animated 2D character **that looks like me** lives on the desktop, asleep. Tap him → he wakes up with a thought cloud: "What do you need me to find?" → a chat box appears below him → I describe the file → he moves to a corner with a loading spinner over his head while searching → he comes back and shows the results.
 
 ## Decisions
 | Area | Choice |
 |---|---|
-| App shell | Electron + TypeScript (Vite for the renderer) |
-| AI | Google Gemini API: turns the user's sentence into structured search filters (JSON output) |
+| App shell | Electron + TypeScript (plain `tsc`, no bundler) |
+| AI (free only) | Local LLM via Ollama (`qwen2.5:3b`) → Gemini free tier if a key is set → built-in keyword rules |
 | File search | macOS Spotlight (`mdfind` / `mdls`) — no custom indexing needed for v1 |
-| Avatar | Original cute 2D character, animated with Lottie or Rive (idle / listening / thinking / found / not-found) |
+| Avatar | SVG cartoon of me, animated with CSS (sleeping / awake / searching / found / not-found) |
 | Image-content search | Phase 2 (not in v1) |
 
 ## Architecture
@@ -43,8 +43,8 @@ The main process converts this into a Spotlight query, for example:
 If there are no results, it relaxes the filters step by step: drop the date range, then the location, then search keywords only.
 
 ## Privacy
-- Only the typed sentence (plus today's date) is sent to Gemini. File names and contents never leave the machine in v1.
-- The API key is stored in the macOS Keychain (via Electron `safeStorage`), never in the repo.
+- With Ollama, nothing leaves the machine. With Gemini, only the typed sentence (plus today's date) is sent.
+- Keys come from environment variables, never the repo.
 
 ## Milestones
 1. **Scaffold**: Electron + TS + Vite, lint, and a GitHub Actions build check.

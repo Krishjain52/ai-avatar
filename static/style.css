@@ -1,0 +1,255 @@
+/* ── Make the avatar look like you: tweak these ───────────────────────── */
+:root {
+  --skin: #e2b48f;
+  --skin-shade: #c9946c;
+  --hair: #2a1d17;
+  --shirt: #3c6df0;
+  --collar: #2a4fb8;
+  --glasses: none; /* set to "inline" if you wear glasses */
+
+  --ink: #1f2330;
+  --muted: #6b7180;
+  --card: #ffffff;
+  --card-hover: #f1f4fb;
+  --accent: #3c6df0;
+  --shadow: 0 8px 28px rgba(15, 20, 40, 0.22);
+
+  --avatar-w: 72px;
+  --avatar-h: 90px;
+  --avatar-top: 60px;
+}
+body.expanded { --avatar-top: 100px; }
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+  font: 13px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  color: var(--ink);
+}
+
+/* ── Avatar ─────────────────────────────────────────────────────────── */
+#avatar {
+  position: absolute;
+  top: var(--avatar-top);
+  left: 50%;
+  width: var(--avatar-w);
+  height: var(--avatar-h);
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+#avatar svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.shadow { fill: rgba(0, 0, 0, 0.18); }
+.shirt { fill: var(--shirt); }
+.collar { fill: none; stroke: var(--collar); stroke-width: 3; stroke-linejoin: round; }
+.neck { fill: var(--skin-shade); }
+.skin { fill: var(--skin); }
+.hair { fill: var(--hair); }
+.brow { fill: none; stroke: var(--hair); stroke-width: 3.5; stroke-linecap: round; }
+.eye { fill: #2b2b2b; }
+.glint { fill: #fff; }
+.lid { fill: none; stroke: #2b2b2b; stroke-width: 3; stroke-linecap: round; }
+#glasses { display: var(--glasses); fill: none; stroke: #2b2b2b; stroke-width: 2.5; }
+.blush { fill: #ff7f7f; opacity: 0.3; }
+.nose { fill: none; stroke: var(--skin-shade); stroke-width: 2.5; stroke-linecap: round; }
+.mouth { fill: none; stroke: #7a3b3b; stroke-width: 3; stroke-linecap: round; }
+.mouth-fill { fill: #7a3b3b; }
+
+#figure { transform-origin: 80px 198px; transition: transform 0.4s ease; }
+#head { transform-origin: 80px 135px; transition: transform 0.4s ease; }
+#eyes-open { transform-box: fill-box; transform-origin: center; transition: transform 0.3s ease; }
+
+/* Face per state */
+#eyes-closed, #m-sleep, #m-smile, #m-open, #m-flat, #m-sad { display: none; }
+body[data-state="sleeping"] #eyes-open { display: none; }
+body[data-state="sleeping"] #eyes-closed,
+body[data-state="sleeping"] #m-sleep,
+body[data-state="awake"] #m-smile,
+body[data-state="searching"] #m-flat,
+body[data-state="results"] #m-open,
+body[data-state="notfound"] #m-sad { display: inline; }
+
+body[data-state="sleeping"] #head { transform: rotate(-7deg) translateY(3px); }
+body[data-state="sleeping"] #figure { animation: breathe 3.2s ease-in-out infinite; }
+body[data-state="sleeping"] #avatar:hover #figure { animation: stir 0.6s ease-in-out infinite; }
+body[data-state="searching"] #eyes-open { transform: translate(3px, -4px); }
+body[data-state="searching"] #figure { animation: bob 0.9s ease-in-out infinite; }
+body[data-state="awake"] #eyes-open,
+body[data-state="results"] #eyes-open { animation: blink 4s infinite; }
+#avatar.waking #figure { animation: wake 0.7s ease-out; }
+
+@keyframes breathe { 50% { transform: scale(1.02, 0.985); } }
+@keyframes stir { 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+@keyframes bob { 50% { transform: translateY(-3px); } }
+@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
+@keyframes wake {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.06, 0.92) translateY(4px); }
+  60% { transform: scale(0.97, 1.05) translateY(-10px); }
+  100% { transform: scale(1, 1); }
+}
+
+/* ── Zzz while sleeping ─────────────────────────────────────────────── */
+#zzz {
+  position: absolute;
+  top: calc(var(--avatar-top) - 24px);
+  left: calc(50% + 14px);
+  display: none;
+  font-weight: 700;
+  color: #7c8bb0;
+  pointer-events: none;
+}
+body[data-state="sleeping"] #zzz { display: block; }
+#zzz span { position: absolute; opacity: 0; animation: float 3s ease-in infinite; }
+#zzz span:nth-child(1) { font-size: 8px; animation-delay: 0s; }
+#zzz span:nth-child(2) { font-size: 10px; animation-delay: 1s; }
+#zzz span:nth-child(3) { font-size: 13px; animation-delay: 2s; }
+@keyframes float {
+  0% { transform: translate(0, 18px); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(14px, -12px); opacity: 0; }
+}
+
+/* ── Loading spinner over his head while searching ─────────────────── */
+#spinner {
+  position: absolute;
+  top: calc(var(--avatar-top) - 40px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
+body[data-state="searching"] #spinner { display: block; }
+#spinner span {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #dfe5f3;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Thought cloud ─────────────────────────────────────────────────── */
+#cloud {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 240px;
+  padding: 9px 14px;
+  transform: translateX(-50%);
+  display: none;
+  text-align: center;
+  background: var(--card);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  animation: pop 0.35s ease-out;
+}
+#cloud::before, #cloud::after {
+  content: "";
+  position: absolute;
+  background: var(--card);
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+}
+#cloud::before { width: 11px; height: 11px; left: 52%; bottom: -15px; }
+#cloud::after { width: 6px; height: 6px; left: 49%; bottom: -25px; }
+#cloud-text { margin: 0; font-size: 13px; font-weight: 600; }
+#cloud-note { margin: 3px 0 0; font-size: 10px; color: var(--muted); }
+#cloud-note:empty { display: none; }
+body[data-state="awake"] #cloud,
+body[data-state="results"] #cloud,
+body[data-state="notfound"] #cloud { display: block; }
+@keyframes pop { from { transform: translateX(-50%) scale(0.6); opacity: 0; } }
+
+/* ── Chat box under him ────────────────────────────────────────────── */
+#chat {
+  position: absolute;
+  top: calc(var(--avatar-top) + var(--avatar-h) + 8px);
+  left: 50%;
+  width: 280px;
+  transform: translateX(-50%);
+  display: none;
+  gap: 4px;
+  padding: 4px;
+  background: var(--card);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+body[data-state="awake"] #chat,
+body[data-state="results"] #chat,
+body[data-state="notfound"] #chat { display: flex; }
+#chat input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  user-select: text;
+}
+#chat button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Results ───────────────────────────────────────────────────────── */
+#results {
+  position: absolute;
+  top: calc(var(--avatar-top) + var(--avatar-h) + 52px);
+  left: 50%;
+  width: 300px;
+  max-height: 200px;
+  margin: 0;
+  padding: 6px;
+  transform: translateX(-50%);
+  display: none;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+body[data-state="results"] #results { display: block; }
+.result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.result:hover { background: var(--card-hover); }
+.result img { width: 30px; height: 30px; flex: none; object-fit: cover; border-radius: 6px; }
+.meta { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.meta strong, .meta span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.meta strong { font-weight: 600; }
+.meta span { font-size: 11px; color: var(--muted); }
+.reveal {
+  flex: none;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+}
+.reveal:hover { background: #e3e8f5; }
