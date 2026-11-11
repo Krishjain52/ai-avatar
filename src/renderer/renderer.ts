@@ -27,13 +27,88 @@ declare const api: AvatarApi;
   const input = $<HTMLInputElement>('q');
   const list = $<HTMLUListElement>('results');
 
+  const sprite = document.getElementById('sprite') as unknown as SVGSVGElement;
+
+  // ── Pixel sprite: 16x20 grid. '.' = transparent, 0-3 = Game Boy shades (light → dark).
+  const BASE = [
+    '.......33.......', // pom-pom
+    '.....332233.....', // beanie
+    '....32222223....',
+    '...3222222223...',
+    '...3333333333...', // beanie band
+    '...3000000003...', // face
+    '..300000000003..', // 6  eyes (variable)
+    '..300000000003..', // 7  eyes (variable)
+    '..300000000003..', // 8  eyes (variable)
+    '..310000000013..', // cheeks
+    '..300000000003..', // 10 mouth (variable)
+    '...3000000003...', // 11 mouth (variable)
+    '....33333333....', // chin
+    '...3222222223...', // hoodie
+    '..322222222223..',
+    '..302222222203..', // hands
+    '..302211112203..', // pocket
+    '...3222222223...',
+    '....33....33....', // legs
+    '...3333..3333...', // shoes
+  ];
+  const FACE = '..300000000003..';
+  const EYE = '..300300003003..';
+  const EYES = {
+    open: [FACE, EYE, EYE],
+    closed: [FACE, FACE, '..303300003303..'],
+    up: [EYE, EYE, FACE],
+  };
+  const MOUTHS = {
+    o: ['..300003300003..', '...3000000003...'],
+    smile: ['..300030030003..', '...3000330003...'],
+    grin: ['..300333333003..', '...3003333003...'],
+    flat: ['..300033330003..', '...3000000003...'],
+    sad: ['..300003300003..', '...3003003003...'],
+  };
+  type Eyes = keyof typeof EYES;
+  type Mouth = keyof typeof MOUTHS;
+  const FACES: Record<State, [Eyes, Mouth]> = {
+    sleeping: ['closed', 'o'],
+    awake: ['open', 'smile'],
+    searching: ['up', 'flat'],
+    results: ['open', 'grin'],
+    notfound: ['open', 'sad'],
+  };
+
+  function drawSprite(eyes: Eyes, mouth: Mouth) {
+    const rows = [...BASE];
+    rows.splice(6, 3, ...EYES[eyes]);
+    rows.splice(10, 2, ...MOUTHS[mouth]);
+    let svg = '';
+    rows.forEach((row, y) => {
+      // Merge same-colour runs into one rect each.
+      for (let x = 0; x < row.length; ) {
+        const c = row[x];
+        let end = x + 1;
+        while (end < row.length && row[end] === c) end++;
+        if (c !== '.') svg += `<rect class="c${c}" x="${x}" y="${y}" width="${end - x}" height="1"/>`;
+        x = end;
+      }
+    });
+    sprite.innerHTML = svg;
+  }
+
   let state: State = 'sleeping';
   const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   function setState(s: State) {
     state = s;
     document.body.dataset.state = s;
+    drawSprite(...FACES[s]);
   }
+
+  // Blink every few seconds while he's awake.
+  setInterval(() => {
+    if (state !== 'awake' && state !== 'results') return;
+    drawSprite('closed', FACES[state][1]);
+    setTimeout(() => drawSprite(...FACES[state]), 140);
+  }, 3500);
 
   function setLayout(mode: 'compact' | 'expanded') {
     document.body.classList.toggle('expanded', mode === 'expanded');
