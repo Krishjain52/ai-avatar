@@ -8,7 +8,7 @@ type Mode = 'compact' | 'expanded';
 type Point = { x: number; y: number };
 
 /**
- * Window layouts. `avatarTop` is where the 72x90 avatar sits inside the window,
+ * Window layouts. `avatarTop` is where the 64x80 avatar sits inside the window,
  * so we can keep the avatar still on screen while the window grows or shrinks.
  */
 const SIZES: Record<Mode, { w: number; h: number; avatarTop: number }> = {

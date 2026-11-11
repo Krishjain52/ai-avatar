@@ -13,50 +13,12 @@
     <p id="cloud-note"></p>
   </div>
 
-  <div id="spinner" aria-label="Searching"><span></span></div>
+  <div id="spinner" aria-label="Searching"><i></i><i></i><i></i></div>
   <div id="zzz" aria-hidden="true"><span>z</span><span>z</span><span>Z</span></div>
 
   <div id="avatar" class="hit" title="Tap me! (drag to move, right-click to quit)">
-    <!-- Edit the colours in style.css (:root) to make the avatar look like you. -->
-    <svg viewBox="0 0 160 200" aria-hidden="true">
-      <ellipse class="shadow" cx="80" cy="195" rx="48" ry="5" />
-      <g id="figure">
-        <path class="shirt" d="M28 198 Q28 152 80 147 Q132 152 132 198 Z" />
-        <path class="collar" d="M66 150 L80 166 L94 150" />
-        <rect class="neck" x="70" y="126" width="20" height="26" rx="8" />
-        <g id="head">
-          <circle class="skin" cx="34" cy="92" r="10" />
-          <circle class="skin" cx="126" cy="92" r="10" />
-          <ellipse class="skin" cx="80" cy="88" rx="46" ry="48" />
-          <path class="hair" d="M33 86 Q26 38 70 34 Q86 26 102 36 Q134 42 127 86 Q120 60 100 56 Q82 66 58 58 Q40 64 33 86 Z" />
-          <path class="brow" d="M54 73 Q62 68 70 72" />
-          <path class="brow" d="M90 72 Q98 68 106 73" />
-          <g id="eyes-open">
-            <ellipse class="eye" cx="62" cy="88" rx="5.5" ry="7" />
-            <ellipse class="eye" cx="98" cy="88" rx="5.5" ry="7" />
-            <circle class="glint" cx="64" cy="85" r="1.8" />
-            <circle class="glint" cx="100" cy="85" r="1.8" />
-          </g>
-          <g id="eyes-closed">
-            <path class="lid" d="M55 90 Q62 95 69 90" />
-            <path class="lid" d="M91 90 Q98 95 105 90" />
-          </g>
-          <g id="glasses">
-            <circle cx="62" cy="88" r="12" />
-            <circle cx="98" cy="88" r="12" />
-            <path d="M74 88 L86 88" />
-          </g>
-          <ellipse class="blush" cx="51" cy="104" rx="7" ry="4" />
-          <ellipse class="blush" cx="109" cy="104" rx="7" ry="4" />
-          <path class="nose" d="M80 94 Q77 101 81 103" />
-          <ellipse id="m-sleep" class="mouth-fill" cx="80" cy="114" rx="3.5" ry="4" />
-          <path id="m-smile" class="mouth" d="M69 110 Q80 121 91 110" />
-          <path id="m-open" class="mouth-fill" d="M68 109 Q80 127 92 109 Z" />
-          <path id="m-flat" class="mouth" d="M72 114 Q80 112 88 114" />
-          <path id="m-sad" class="mouth" d="M70 117 Q80 109 90 117" />
-        </g>
-      </g>
-    </svg>
+    <!-- Pixel sprite is drawn by renderer.ts; palette lives in style.css (:root). -->
+    <svg id="sprite" viewBox="0 0 16 20" shape-rendering="crispEdges" aria-hidden="true"></svg>
   </div>
 
   <form id="chat" class="hit" autocomplete="off">
