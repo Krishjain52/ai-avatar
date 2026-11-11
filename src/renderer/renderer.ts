@@ -114,9 +114,20 @@ declare const api: AvatarApi;
     document.body.classList.toggle('expanded', mode === 'expanded');
   }
 
+  // Retro typewriter effect for the speech box.
+  let typing: number | undefined;
   function say(text: string, note = '') {
-    cloudText.textContent = text;
-    cloudNote.textContent = note;
+    clearInterval(typing);
+    cloudText.textContent = '';
+    cloudNote.textContent = '';
+    let i = 0;
+    typing = window.setInterval(() => {
+      cloudText.textContent = text.slice(0, ++i);
+      if (i >= text.length) {
+        clearInterval(typing);
+        cloudNote.textContent = note;
+      }
+    }, 28);
   }
 
   async function wake() {
