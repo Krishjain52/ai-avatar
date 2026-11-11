@@ -9,7 +9,7 @@ An animated 2D character **that looks like me** lives on the desktop, asleep. Ta
 | App shell | Electron + TypeScript (plain `tsc`, no bundler) |
 | AI (free only) | Local LLM via Ollama (`qwen2.5:3b`) → Gemini free tier if a key is set → built-in keyword rules |
 | File search | macOS Spotlight (`mdfind` / `mdls`) — no custom indexing needed for v1 |
-| Avatar | SVG cartoon of me, animated with CSS (sleeping / awake / searching / found / not-found) |
+| Avatar | Original retro pixel sprite (16×20, Game Boy-style 4-green palette), faces per state: sleeping / awake / searching / found / not-found |
 | Image-content search | Phase 2 (not in v1) |
 
 ## Architecture

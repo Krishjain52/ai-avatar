@@ -12,7 +12,7 @@ npm start
 - **Tap** the avatar to wake him; tap again or press **Esc** to put him back to sleep.
 - **Drag** him anywhere on screen.
 - **Right-click** him to quit.
-- Click a result to open it, or 📂 to show it in Finder.
+- Click a result to open it, or **DIR** to show it in Finder.
 
 ## Making the search smart (free)
 
@@ -30,9 +30,9 @@ He understands plain English using whichever of these is available, in this orde
 
 Only the sentence you type goes to the AI. Your files never leave your Mac. The search itself uses macOS Spotlight.
 
-## Make him look like you
+## The character
 
-Change the colours at the top of [static/style.css](static/style.css) (skin, hair, shirt, glasses). The character itself is the SVG in [static/index.html](static/index.html).
+He's an original 16×20 pixel sprite in a retro handheld style: a 4-shade green palette, chunky step animation, and a typewriter speech box. Recolour everything with the four `--gb*` colours at the top of [static/style.css](static/style.css). The pixels themselves are plain text grids in [src/renderer/renderer.ts](src/renderer/renderer.ts), so editing the art is just editing characters.
 
 ## Develop
 
