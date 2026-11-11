@@ -196,7 +196,7 @@ declare const api: AvatarApi;
         reveal.type = 'button';
         reveal.className = 'reveal';
         reveal.title = 'Show in Finder';
-        reveal.textContent = '📂';
+        reveal.textContent = 'DIR';
         reveal.addEventListener('click', (e) => {
           e.stopPropagation();
           api.reveal(r.path);
