@@ -24,11 +24,33 @@ html, body {
   -webkit-font-smoothing: none;
 }
 
-/* ── Sprite ────────────────────────────────────────────────────────── */
-.c0 { fill: var(--gb0); }
-.c1 { fill: var(--gb1); }
-.c2 { fill: var(--gb2); }
-.c3 { fill: var(--gb3); }
+/* ── Sprite (full colour). Change these to restyle the character. ───── */
+:root {
+  --outline: #2a1b12;
+  --pom: #f6efe2;
+  --beanie: #e8a33d;
+  --beanie-band: #b86f24;
+  --hair: #3b2417;
+  --skin: #d9a07a;
+  --blush: #e07f6e;
+  --eyes: #2a1b12;
+  --mouth: #8f3a30;
+  --hoodie: #2f8c9a;
+  --pocket: #57b3bf;
+  --jeans: #3e4f7a;
+}
+.po { fill: var(--outline); }
+.pw { fill: var(--pom); }
+.pb { fill: var(--beanie); }
+.pn { fill: var(--beanie-band); }
+.ph { fill: var(--hair); }
+.ps { fill: var(--skin); }
+.pk { fill: var(--blush); }
+.pe { fill: var(--eyes); }
+.pm { fill: var(--mouth); }
+.pd { fill: var(--hoodie); }
+.pl { fill: var(--pocket); }
+.pp { fill: var(--jeans); }
 
 #avatar {
   position: absolute;
