@@ -38,7 +38,7 @@ declare const api: AvatarApi;
     '....obbbbbbo....',
     '...obbbbbbbbo...',
     '...onnnnnnnno...', // beanie band
-    '...ohsssssssho..'.slice(0, 16).replace('...ohsssssssho..', '...ohsssssssho..'), // placeholder, replaced below
+    '...ohssssssho...', // face + hair
     '..ohssssssssho..', // 6  eyes
     '..osssssssssso..', // 7  eyes
     '..osssssssssso..', // 8  eyes
@@ -54,7 +54,6 @@ declare const api: AvatarApi;
     '....pp....pp....', // legs
     '...oooo..oooo...', // shoes
   ];
-  BASE[5] = '...ohsssssho...'.length === 16 ? '...ohsssssho...' : '...ohsssssssho..'.slice(0, 16);
 
   // Faces are pixel overlays on BASE: [row, column, colour].
   type Px = [number, number, string];
