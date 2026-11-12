@@ -29,42 +29,48 @@ declare const api: AvatarApi;
 
   const sprite = document.getElementById('sprite') as unknown as SVGSVGElement;
 
-  // ── Pixel sprite: 16x20 grid. '.' = transparent, 0-3 = Game Boy shades (light → dark).
+  // ── Pixel sprite: 16x20 grid. '.' = transparent; each letter is a colour from style.css (.p<letter>).
+  //    o outline · w pom-pom · b beanie · n beanie band · h hair · s skin · k blush
+  //    e eyes · m mouth · d hoodie · l pocket · p jeans
   const BASE = [
-    '.......33.......', // pom-pom
-    '.....332233.....', // beanie
-    '....32222223....',
-    '...3222222223...',
-    '...3333333333...', // beanie band
-    '...3000000003...', // face
-    '..300000000003..', // 6  eyes (variable)
-    '..300000000003..', // 7  eyes (variable)
-    '..300000000003..', // 8  eyes (variable)
-    '..310000000013..', // cheeks
-    '..300000000003..', // 10 mouth (variable)
-    '...3000000003...', // 11 mouth (variable)
-    '....33333333....', // chin
-    '...3222222223...', // hoodie
-    '..322222222223..',
-    '..302222222203..', // hands
-    '..302211112203..', // pocket
-    '...3222222223...',
-    '....33....33....', // legs
-    '...3333..3333...', // shoes
+    '.......ww.......', // pom-pom
+    '.....oobboo.....', // beanie
+    '....obbbbbbo....',
+    '...obbbbbbbbo...',
+    '...onnnnnnnno...', // beanie band
+    '...ohsssssssho..'.slice(0, 16).replace('...ohsssssssho..', '...ohsssssssho..'), // placeholder, replaced below
+    '..ohssssssssho..', // 6  eyes
+    '..osssssssssso..', // 7  eyes
+    '..osssssssssso..', // 8  eyes
+    '..okssssssssko..', // 9  cheeks
+    '..osssssssssso..', // 10 mouth
+    '...osssssssso...', // 11 mouth
+    '....oooooooo....', // chin
+    '...oddddddddo...', // hoodie
+    '..oddddddddddo..',
+    '..osddddddddso..', // hands
+    '..osddllllddso..', // pocket
+    '...oddddddddo...',
+    '....pp....pp....', // legs
+    '...oooo..oooo...', // shoes
   ];
-  const FACE = '..300000000003..';
-  const EYE = '..300300003003..';
+  BASE[5] = '...ohsssssho...'.length === 16 ? '...ohsssssho...' : '...ohsssssssho..'.slice(0, 16);
+
+  // Faces are pixel overlays on BASE: [row, column, colour].
+  type Px = [number, number, string];
+  const eye = (cells: [number, number][]): Px[] => cells.map(([y, x]) => [y, x, 'e']);
+  const mouth = (cells: [number, number][]): Px[] => cells.map(([y, x]) => [y, x, 'm']);
   const EYES = {
-    open: [FACE, EYE, EYE],
-    closed: [FACE, FACE, '..303300003303..'],
-    up: [EYE, EYE, FACE],
+    open: eye([[7, 5], [7, 10], [8, 5], [8, 10]]),
+    closed: eye([[8, 4], [8, 5], [8, 10], [8, 11]]),
+    up: eye([[6, 5], [6, 10], [7, 5], [7, 10]]),
   };
   const MOUTHS = {
-    o: ['..300003300003..', '...3000000003...'],
-    smile: ['..300030030003..', '...3000330003...'],
-    grin: ['..300333333003..', '...3003333003...'],
-    flat: ['..300033330003..', '...3000000003...'],
-    sad: ['..300003300003..', '...3003003003...'],
+    o: mouth([[10, 7], [10, 8]]),
+    smile: mouth([[10, 6], [10, 9], [11, 7], [11, 8]]),
+    grin: mouth([[10, 5], [10, 6], [10, 7], [10, 8], [10, 9], [10, 10], [11, 6], [11, 7], [11, 8], [11, 9]]),
+    flat: mouth([[10, 6], [10, 7], [10, 8], [10, 9]]),
+    sad: mouth([[10, 7], [10, 8], [11, 6], [11, 9]]),
   };
   type Eyes = keyof typeof EYES;
   type Mouth = keyof typeof MOUTHS;
@@ -77,17 +83,16 @@ declare const api: AvatarApi;
   };
 
   function drawSprite(eyes: Eyes, mouth: Mouth) {
-    const rows = [...BASE];
-    rows.splice(6, 3, ...EYES[eyes]);
-    rows.splice(10, 2, ...MOUTHS[mouth]);
+    const grid = BASE.map((row) => row.split(''));
+    for (const [y, x, c] of [...EYES[eyes], ...MOUTHS[mouth]]) grid[y][x] = c;
     let svg = '';
-    rows.forEach((row, y) => {
+    grid.forEach((row, y) => {
       // Merge same-colour runs into one rect each.
       for (let x = 0; x < row.length; ) {
         const c = row[x];
         let end = x + 1;
         while (end < row.length && row[end] === c) end++;
-        if (c !== '.') svg += `<rect class="c${c}" x="${x}" y="${y}" width="${end - x}" height="1"/>`;
+        if (c !== '.') svg += `<rect class="p${c}" x="${x}" y="${y}" width="${end - x}" height="1"/>`;
         x = end;
       }
     });
