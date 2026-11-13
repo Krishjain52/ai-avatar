@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { normalizeName, scanFiles } from './scan';
+import { ICLOUD_DIR, normalizeName, scanFiles } from './scan';
 import { FileKind, FolderHint, FoundFile, SearchIntent } from './types';
 
 const KIND_UTIS: Record<FileKind, string[]> = {
@@ -94,7 +94,9 @@ export function buildQuery(intent: SearchIntent, opts: QueryOptions): string | n
 /** Hide system/app internals that Spotlight indexes but people never mean. */
 export function isExcluded(p: string, home = os.homedir()): boolean {
   if (!p.startsWith(home + '/')) return true;
-  const segs = p.slice(home.length + 1).split('/');
+  let rel = p.slice(home.length + 1);
+  if (rel.startsWith(ICLOUD_DIR + '/')) rel = rel.slice(ICLOUD_DIR.length + 1); // iCloud Drive is fine
+  const segs = rel.split('/');
   if (segs[0] === 'Library' || segs[0] === 'Applications') return true;
   return segs.some(
     (s) => s.startsWith('.') || s === 'node_modules' || s === '__pycache__' ||

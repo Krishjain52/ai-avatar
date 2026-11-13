@@ -9,8 +9,10 @@ import { FileKind, SearchIntent } from './types';
  * finds "PAN Card.jpg" and "pan card" finds "pancard.png".
  */
 
-const ROOTS = ['Desktop', 'Documents', 'Downloads', 'Pictures', 'Movies', 'Music'];
-const MAX_ENTRIES = 60_000;
+/** iCloud Drive lives under ~/Library, which is otherwise skipped. */
+export const ICLOUD_DIR = path.join('Library', 'Mobile Documents', 'com~apple~CloudDocs');
+const TOP_LEVEL_SKIP = new Set(['Library', 'Applications', 'Public']);
+const MAX_ENTRIES = 120_000;
 const MAX_DEPTH = 8;
 const TIME_BUDGET_MS = 4_000;
 const CACHE_MS = 60_000;
@@ -47,7 +49,8 @@ async function scanAll(home = os.homedir()): Promise<Entry[]> {
   if (cache && Date.now() - cache.at < CACHE_MS) return cache.entries;
   const entries: Entry[] = [];
   const deadline = Date.now() + TIME_BUDGET_MS;
-  const queue: Array<[string, number]> = ROOTS.map((r) => [path.join(home, r), 0]);
+  // Whole home folder (minus Library/Applications) plus iCloud Drive.
+  const queue: Array<[string, number]> = [[home, 0], [path.join(home, ICLOUD_DIR), 1]];
   while (queue.length && entries.length < MAX_ENTRIES && Date.now() < deadline) {
     const [dir, depth] = queue.shift()!;
     let dirents;
@@ -64,6 +67,7 @@ async function scanAll(home = os.homedir()): Promise<Entry[]> {
       // Packages like .app / .photoslibrary are folders on disk but single things to people.
       const isPackage = isDir && /\.(app|photoslibrary|musiclibrary|fcpbundle|bundle)$/i.test(name);
       if (isPackage) continue;
+      if (depth === 0 && dir === home && TOP_LEVEL_SKIP.has(name)) continue;
       const ext = isDir ? '' : path.extname(name).slice(1).toLowerCase();
       entries.push({ path: full, norm: normalizeName(isDir ? name : name.slice(0, name.length - ext.length)), ext, isDir });
       if (isDir && depth < MAX_DEPTH && !SKIP_DIRS.has(name)) queue.push([full, depth + 1]);

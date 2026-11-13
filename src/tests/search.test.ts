@@ -50,6 +50,7 @@ test('isExcluded hides Library, hidden folders and app bundles', () => {
   assert.equal(isExcluded('/Users/me/.config/a.txt', home), true);
   assert.equal(isExcluded('/Users/me/Desktop/Foo.app/Contents/x', home), true);
   assert.equal(isExcluded('/Users/me/Desktop/photo.png', home), false);
+  assert.equal(isExcluded('/Users/me/Library/Mobile Documents/com~apple~CloudDocs/Taxes/pan.pdf', home), false);
 });
 
 test('stem turns plurals into a name substring', () => {
