@@ -9,10 +9,12 @@ const KIND_UTIS: Record<FileKind, string[]> = {
   video: ['public.movie'],
   audio: ['public.audio'],
   pdf: ['com.adobe.pdf'],
+  // People say "document" for PDFs too. Plain text is left out: it also matches code, CSV and logs.
   document: [
+    'com.adobe.pdf',
     'org.openxmlformats.wordprocessingml.document', 'com.microsoft.word.doc', 'public.rtf',
     'com.apple.iwork.pages.sffpages', 'com.apple.iwork.pages.pages',
-    'org.oasis-open.opendocument.text', 'net.daringfireball.markdown', 'public.plain-text',
+    'org.oasis-open.opendocument.text', 'net.daringfireball.markdown',
   ],
   spreadsheet: ['public.spreadsheet', 'public.comma-separated-values-text'],
   presentation: ['public.presentation'],
@@ -29,21 +31,51 @@ const FOLDER_DIRS: Record<FolderHint, string> = {
 export interface QueryOptions {
   useKinds: boolean;
   useDates: boolean;
+  /** Match ANY keyword instead of ALL of them. */
+  anyKeyword?: boolean;
+  /** Only look at file names, not file contents. */
+  nameOnly?: boolean;
 }
 
 export function escapeTerm(s: string): string {
   return s.replace(/["\\*?]/g, '').replace(/\s+/g, ' ').trim();
 }
 
+/** Rough singular stem so "invoices" still finds "invoice.pdf" (used as a name substring). */
+export function stem(w: string): string {
+  const l = w.toLowerCase();
+  if (l.length < 5) return w;
+  if (l.endsWith('ies')) return w.slice(0, -3);
+  if (/(s|x|ch|sh)es$/.test(l)) return w.slice(0, -2);
+  if (l.endsWith('s') && !/(ss|us|is)$/.test(l)) return w.slice(0, -1);
+  return w;
+}
+
+function keywordClause(kw: string, nameOnly: boolean): string | null {
+  const w = escapeTerm(kw);
+  if (!w) return null;
+  const st = stem(w);
+  const parts = [`kMDItemDisplayName == "*${st}*"cd`];
+  if (!nameOnly) {
+    parts.push(`kMDItemTextContent == "${w}"cdw`);
+    if (st !== w) parts.push(`kMDItemTextContent == "${st}"cdw`);
+  }
+  return `(${parts.join(' || ')})`;
+}
+
 /** Builds a Spotlight (mdfind) query string, or null if there is nothing to filter on. */
 export function buildQuery(intent: SearchIntent, opts: QueryOptions): string | null {
   const clauses: string[] = [];
-  for (const kw of intent.keywords) {
-    const w = escapeTerm(kw);
-    if (w) clauses.push(`(kMDItemDisplayName == "*${w}*"cd || kMDItemTextContent == "${w}"cdw)`);
+  const kwClauses = intent.keywords
+    .map((k) => keywordClause(k, !!opts.nameOnly))
+    .filter((c): c is string => c !== null);
+  if (kwClauses.length) {
+    clauses.push(opts.anyKeyword && kwClauses.length > 1 ? `(${kwClauses.join(' || ')})` : kwClauses.join(' && '));
+  } else if (opts.nameOnly) {
+    return null;
   }
   if (opts.useKinds && intent.kinds.length) {
-    const utis = intent.kinds.flatMap((k) => KIND_UTIS[k]);
+    const utis = [...new Set(intent.kinds.flatMap((k) => KIND_UTIS[k]))];
     clauses.push(`(${utis.map((u) => `kMDItemContentTypeTree == "${u}"`).join(' || ')})`);
   }
   if (opts.useDates && (intent.dateFrom || intent.dateTo)) {
@@ -103,7 +135,7 @@ function runMdfind(dir: string, query: string, limit = 1500): Promise<string[]> 
 
 async function rank(paths: string[], intent: SearchIntent, limit: number): Promise<FoundFile[]> {
   const home = os.homedir();
-  const kws = intent.keywords.map((k) => escapeTerm(k).toLowerCase()).filter(Boolean);
+  const kws = intent.keywords.map((k) => stem(escapeTerm(k)).toLowerCase()).filter(Boolean);
   const now = Date.now();
   const scored = await Promise.all(
     paths.slice(0, 800).map(async (p) => {
@@ -113,10 +145,12 @@ async function rank(paths: string[], intent: SearchIntent, limit: number): Promi
         const lowerName = name.toLowerCase();
         const lowerPath = p.toLowerCase();
         let score = 0;
+        let nameHits = 0;
         for (const k of kws) {
-          if (lowerName.includes(k)) score += 10;
+          if (lowerName.includes(k)) { score += 10; nameHits++; }
           else if (lowerPath.includes(k)) score += 2;
         }
+        if (kws.length > 1 && nameHits === kws.length) score += 10; // every word is in the name
         const ageDays = (now - st.mtimeMs) / 86_400_000;
         score += 5 * Math.exp(-ageDays / 120);
         score -= p.split('/').length * 0.1;
@@ -144,19 +178,23 @@ async function rank(paths: string[], intent: SearchIntent, limit: number): Promi
 }
 
 /**
- * Runs the strictest search first, then loosens filters
- * (folder → dates → file type) until something turns up.
+ * Runs the strictest search first, then loosens filters until something turns up:
+ * folder → dates → all words → file type. An explicit file type ("image", "pdf") is
+ * kept as long as possible, since people are surer of the type than of exact words.
  */
 export async function searchFiles(
   intent: SearchIntent,
   limit = 20,
 ): Promise<{ results: FoundFile[]; relaxed: boolean }> {
   const home = os.homedir();
-  const attempts = [
+  type Attempt = QueryOptions & { useFolder: boolean };
+  const attempts: Attempt[] = [
     { useKinds: true, useDates: true, useFolder: true },
     { useKinds: true, useDates: true, useFolder: false },
     { useKinds: true, useDates: false, useFolder: false },
+    { useKinds: true, useDates: false, useFolder: false, anyKeyword: true },
     { useKinds: false, useDates: false, useFolder: false },
+    { useKinds: false, useDates: false, useFolder: false, anyKeyword: true },
   ];
   const seen = new Set<string>();
   for (let i = 0; i < attempts.length; i++) {
@@ -167,7 +205,14 @@ export async function searchFiles(
     const key = `${dir}\n${query}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    const paths = await runMdfind(dir, query);
+    // Name matches are the strongest signal, so fetch them separately and put them first;
+    // otherwise they can be crowded out by files that only mention the word inside.
+    const nameQuery = buildQuery(intent, { ...a, nameOnly: true });
+    const [byName, byAny] = await Promise.all([
+      nameQuery ? runMdfind(dir, nameQuery, 400) : Promise.resolve([]),
+      runMdfind(dir, query),
+    ]);
+    const paths = [...new Set([...byName, ...byAny])];
     if (paths.length) return { results: await rank(paths, intent, limit), relaxed: i > 0 };
   }
   return { results: [], relaxed: false };
