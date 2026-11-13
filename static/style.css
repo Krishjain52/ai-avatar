@@ -1,14 +1,29 @@
-/* ── Game Boy palette (lightest → darkest). Change these to recolour everything. ── */
+/* ── UI colours. Change these to restyle the bubbles, chat box and results. ── */
 :root {
-  --gb0: #9bbc0f;
-  --gb1: #8bac0f;
-  --gb2: #306230;
-  --gb3: #0f380f;
+  --panel: rgba(255, 255, 255, 0.96);
+  --text: #1f2328;
+  --muted: #6b7280;
+  --line: rgba(15, 23, 42, 0.10);
+  --hover: rgba(47, 140, 154, 0.10);
+  --accent: #2f8c9a;      /* matches his hoodie */
+  --accent-text: #ffffff;
+  --shadow: 0 6px 20px rgba(15, 23, 42, 0.16), 0 1px 3px rgba(15, 23, 42, 0.10);
+  --radius: 12px;
 
   --avatar-w: 64px; /* 16 x 20 sprite at 4px per pixel */
   --avatar-h: 80px;
   --avatar-top: 60px;
-  --px: 3px;        /* border thickness for the pixel UI */
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --panel: rgba(32, 34, 38, 0.96);
+    --text: #eceef1;
+    --muted: #9aa3ae;
+    --line: rgba(255, 255, 255, 0.10);
+    --hover: rgba(87, 179, 191, 0.16);
+    --accent: #3fa3b1;
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.35);
+  }
 }
 body.expanded { --avatar-top: 100px; }
 
@@ -19,9 +34,8 @@ html, body {
   overflow: hidden;
   background: transparent;
   user-select: none;
-  font: bold 12px/1.4 "Courier New", ui-monospace, Menlo, monospace;
-  color: var(--gb3);
-  -webkit-font-smoothing: none;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  color: var(--text);
 }
 
 /* ── Sprite (full colour). Change these to restyle the character. ───── */
@@ -85,12 +99,13 @@ body[data-state="results"] #sprite { animation: hop 0.6s steps(1) 2; }
   top: calc(var(--avatar-top) - 22px);
   left: calc(50% + 14px);
   display: none;
-  color: var(--gb3);
-  text-shadow: 1px 1px 0 var(--gb0), -1px -1px 0 var(--gb0);
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   pointer-events: none;
 }
 body[data-state="sleeping"] #zzz { display: block; }
-#zzz span { position: absolute; opacity: 0; animation: float 3s steps(6) infinite; }
+#zzz span { position: absolute; opacity: 0; animation: float 3s ease-out infinite; }
 #zzz span:nth-child(1) { font-size: 9px; animation-delay: 0s; }
 #zzz span:nth-child(2) { font-size: 11px; animation-delay: 1s; }
 #zzz span:nth-child(3) { font-size: 14px; animation-delay: 2s; }
@@ -103,89 +118,98 @@ body[data-state="sleeping"] #zzz { display: block; }
 /* ── Loading dots over his head while searching ───────────────────── */
 #spinner {
   position: absolute;
-  top: calc(var(--avatar-top) - 32px);
+  top: calc(var(--avatar-top) - 30px);
   left: 50%;
   transform: translateX(-50%);
   display: none;
   gap: 4px;
-  padding: 5px 6px;
-  background: var(--gb0);
-  border: var(--px) solid var(--gb3);
-  box-shadow: 3px 3px 0 var(--gb2);
+  padding: 6px 9px;
+  background: var(--panel);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
   pointer-events: none;
 }
 body[data-state="searching"] #spinner { display: flex; }
-#spinner i { width: 6px; height: 6px; background: var(--gb3); animation: dot 0.9s infinite; }
-#spinner i:nth-child(2) { animation-delay: 0.3s; }
-#spinner i:nth-child(3) { animation-delay: 0.6s; }
-@keyframes dot { 0%, 32% { opacity: 1; } 33%, 100% { opacity: 0.2; } }
+#spinner i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: dot 0.9s ease-in-out infinite; }
+#spinner i:nth-child(2) { animation-delay: 0.15s; }
+#spinner i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dot { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
 
-/* ── Shared Game Boy dialog box look ──────────────────────────────── */
+/* ── Shared card look ─────────────────────────────────────────────── */
 #cloud, #chat, #results {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   display: none;
-  background: var(--gb0);
-  border: var(--px) solid var(--gb3);
-  box-shadow: 4px 4px 0 var(--gb2);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
 
-/* ── Thought box ──────────────────────────────────────────────────── */
+/* ── Thought bubble ───────────────────────────────────────────────── */
 #cloud {
   top: 8px;
   width: 250px;
-  padding: 8px 10px;
+  padding: 10px 14px;
   text-align: center;
-  animation: pop 0.25s steps(3);
+  border-radius: 16px;
+  animation: pop 0.22s ease-out;
 }
-#cloud::before, #cloud::after { content: ""; position: absolute; }
-#cloud::before {
-  width: 10px; height: 10px; left: calc(50% - 5px); bottom: -18px;
-  background: var(--gb0); border: var(--px) solid var(--gb3);
+#cloud::before, #cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: var(--panel);
+  box-shadow: var(--shadow);
 }
-#cloud::after { width: 6px; height: 6px; left: calc(50% + 2px); bottom: -28px; background: var(--gb3); }
-#cloud-text { margin: 0; min-height: 18px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-#cloud-note { margin: 4px 0 0; font-size: 10px; color: var(--gb2); }
+#cloud::before { width: 12px; height: 12px; left: calc(50% - 6px); bottom: -17px; }
+#cloud::after { width: 7px; height: 7px; left: calc(50% + 4px); bottom: -28px; }
+#cloud-text { margin: 0; min-height: 18px; font-size: 14px; font-weight: 600; }
+#cloud-note { margin: 4px 0 0; font-size: 11px; color: var(--muted); }
 #cloud-note:empty { display: none; }
 body[data-state="awake"] #cloud,
 body[data-state="results"] #cloud,
 body[data-state="notfound"] #cloud { display: block; }
-@keyframes pop { from { transform: translateX(-50%) scale(0.5); } }
+@keyframes pop { from { opacity: 0; transform: translateX(-50%) scale(0.92); } }
 
 /* ── Chat box under him ───────────────────────────────────────────── */
 #chat {
   top: calc(var(--avatar-top) + var(--avatar-h) + 10px);
   width: 280px;
-  gap: 4px;
-  padding: 3px;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 999px;
 }
 body[data-state="awake"] #chat,
 body[data-state="results"] #chat,
 body[data-state="notfound"] #chat { display: flex; }
+#chat:focus-within { border-color: var(--accent); }
 #chat input {
   flex: 1;
   min-width: 0;
-  padding: 5px 6px;
+  padding: 6px 10px;
   border: 0;
   outline: 0;
   background: transparent;
   font: inherit;
-  color: var(--gb3);
-  caret-color: var(--gb3);
+  color: var(--text);
+  caret-color: var(--accent);
   user-select: text;
 }
-#chat input::placeholder { color: var(--gb2); opacity: 0.8; }
+#chat input::placeholder { color: var(--muted); }
 #chat button {
-  padding: 5px 10px;
+  padding: 6px 14px;
   border: 0;
-  background: var(--gb3);
-  color: var(--gb0);
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
   font: inherit;
-  text-transform: uppercase;
+  font-weight: 600;
   cursor: pointer;
 }
-#chat button:active { transform: translate(1px, 1px); }
+#chat button:hover { filter: brightness(1.08); }
+#chat button:active { transform: scale(0.97); }
 
 /* ── Results ──────────────────────────────────────────────────────── */
 #results {
@@ -193,35 +217,36 @@ body[data-state="notfound"] #chat { display: flex; }
   width: 300px;
   max-height: 200px;
   margin: 0;
-  padding: 4px;
+  padding: 6px;
   overflow-y: auto;
   list-style: none;
 }
 body[data-state="results"] #results { display: block; }
-#results::-webkit-scrollbar { width: 8px; }
-#results::-webkit-scrollbar-thumb { background: var(--gb3); }
+#results::-webkit-scrollbar { width: 6px; }
+#results::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
 .result {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 8px;
   cursor: pointer;
 }
-.result::before { content: "▶"; font-size: 9px; visibility: hidden; }
-.result:hover { background: var(--gb1); }
-.result:hover::before { visibility: visible; }
-.result img { width: 28px; height: 28px; flex: none; object-fit: cover; border: 2px solid var(--gb3); }
+.result:hover { background: var(--hover); }
+.result img { width: 30px; height: 30px; flex: none; object-fit: cover; border-radius: 6px; }
 .meta { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .meta strong, .meta span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.meta span { font-size: 10px; font-weight: normal; color: var(--gb2); }
+.meta strong { font-weight: 600; }
+.meta span { font-size: 11px; color: var(--muted); }
 .reveal {
   flex: none;
-  padding: 2px 5px;
-  border: 2px solid var(--gb3);
-  background: var(--gb0);
-  color: var(--gb3);
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
 }
-.reveal:hover { background: var(--gb1); }
+.reveal:hover { color: var(--accent); border-color: var(--accent); }
