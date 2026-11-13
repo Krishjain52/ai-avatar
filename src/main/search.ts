@@ -182,8 +182,8 @@ async function rank(paths: string[], intent: SearchIntent, limit: number): Promi
 
 /**
  * Runs the strictest search first, then loosens filters until something turns up:
- * folder → dates → all words → file type. An explicit file type ("image", "pdf") is
- * kept as long as possible, since people are surer of the type than of exact words.
+ * folder → dates → all words. An explicit file type ("image", "pdf") is never dropped,
+ * since people are surer of the type than of exact words.
  */
 export async function searchFiles(
   intent: SearchIntent,
@@ -202,6 +202,8 @@ export async function searchFiles(
   const seen = new Set<string>();
   for (let i = 0; i < attempts.length; i++) {
     const a = attempts[i];
+    // If they named a type ("image", "pdf"), never fall back to other types: unrelated files are worse than "not found".
+    if (!a.useKinds && intent.kinds.length) continue;
     const query = buildQuery(intent, a);
     if (!query) continue;
     const dir = a.useFolder && intent.folder ? path.join(home, FOLDER_DIRS[intent.folder]) : home;
