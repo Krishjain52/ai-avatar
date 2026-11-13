@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { heuristicIntent, sanitizeIntent } from '../main/intent';
-import { buildQuery, isExcluded } from '../main/search';
+import { buildQuery, isExcluded, stem } from '../main/search';
 
 const NOW = new Date(2026, 10, 9); // 9 Nov 2026
 
@@ -50,4 +50,27 @@ test('isExcluded hides Library, hidden folders and app bundles', () => {
   assert.equal(isExcluded('/Users/me/.config/a.txt', home), true);
   assert.equal(isExcluded('/Users/me/Desktop/Foo.app/Contents/x', home), true);
   assert.equal(isExcluded('/Users/me/Desktop/photo.png', home), false);
+});
+
+test('stem turns plurals into a name substring', () => {
+  assert.equal(stem('invoices'), 'invoice');
+  assert.equal(stem('boxes'), 'box');
+  assert.equal(stem('categories'), 'categor');
+  assert.equal(stem('status'), 'status');
+  assert.equal(stem('logo'), 'logo');
+});
+
+test('buildQuery anyKeyword ORs the words; nameOnly skips contents', () => {
+  const intent = { keywords: ['architecture', 'diagram'], kinds: ['image' as const], dateFrom: null, dateTo: null, folder: null };
+  const any = buildQuery(intent, { useKinds: true, useDates: false, anyKeyword: true })!;
+  assert.match(any, /\*architecture\*"cd \|\| kMDItemTextContent == "architecture"cdw\) \|\| \(kMDItemDisplayName == "\*diagram/);
+  const names = buildQuery(intent, { useKinds: true, useDates: false, nameOnly: true })!;
+  assert.ok(!names.includes('kMDItemTextContent'));
+  assert.equal(buildQuery({ ...intent, keywords: [] }, { useKinds: true, useDates: false, nameOnly: true }), null);
+});
+
+test('document type includes PDFs but not plain text/code', () => {
+  const q = buildQuery({ keywords: [], kinds: ['document'], dateFrom: null, dateTo: null, folder: null }, { useKinds: true, useDates: false })!;
+  assert.ok(q.includes('com.adobe.pdf'));
+  assert.ok(!q.includes('public.plain-text'));
 });
