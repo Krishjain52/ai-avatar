@@ -218,10 +218,14 @@ declare const api: AvatarApi;
     else if (state !== 'searching') void sleep();
   }
 
-  // Click vs drag on the avatar.
+  // Click vs drag on the avatar. He only moves while the left button is held down on him.
   let start: { x: number; y: number } | null = null;
   let last = { x: 0, y: 0 };
   let dragging = false;
+  const endDrag = () => {
+    start = null;
+    dragging = false;
+  };
   avatar.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     avatar.setPointerCapture(e.pointerId);
@@ -230,20 +234,25 @@ declare const api: AvatarApi;
     dragging = false;
   });
   avatar.addEventListener('pointermove', (e) => {
-    if (!start || state === 'searching') return;
+    if (!start) return;
+    // Button no longer held (the release happened somewhere we didn't see): stop, don't follow the cursor.
+    if ((e.buttons & 1) === 0) return endDrag();
+    if (state === 'searching') return;
     if (!dragging && Math.hypot(e.screenX - start.x, e.screenY - start.y) > 4) dragging = true;
     if (dragging) {
       api.dragBy(e.screenX - last.x, e.screenY - last.y);
       last = { x: e.screenX, y: e.screenY };
     }
   });
-  avatar.addEventListener('pointerup', () => {
-    if (!start) return;
+  avatar.addEventListener('pointerup', (e) => {
+    if (!start || e.button !== 0) return;
     const wasDrag = dragging;
-    start = null;
-    dragging = false;
+    endDrag();
     if (!wasDrag) onAvatarClick();
   });
+  avatar.addEventListener('pointercancel', endDrag);
+  avatar.addEventListener('lostpointercapture', endDrag);
+  window.addEventListener('blur', endDrag);
   avatar.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     api.showMenu();

@@ -65,14 +65,12 @@ html, body {
 
 /* steps() keeps every move chunky, like an 8-bit game */
 body[data-state="sleeping"] #sprite { animation: doze 2.4s steps(1) infinite; }
-body[data-state="sleeping"] #avatar:hover #sprite { animation: stir 0.4s steps(1) infinite; }
 body[data-state="awake"] #sprite { animation: idle 1.2s steps(1) infinite; }
 body[data-state="searching"] #sprite { animation: run 0.3s steps(1) infinite; }
 body[data-state="results"] #sprite { animation: hop 0.6s steps(1) 2; }
 #avatar.waking #sprite { animation: hop 0.6s steps(1) 1; }
 
 @keyframes doze { 50% { transform: translateY(4px); } }
-@keyframes stir { 50% { transform: translateX(4px); } }
 @keyframes idle { 50% { transform: translateY(-4px); } }
 @keyframes run  { 50% { transform: translateY(-4px); } }
 @keyframes hop  {
