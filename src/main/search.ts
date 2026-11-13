@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { normalizeName, scanFiles } from './scan';
 import { FileKind, FolderHint, FoundFile, SearchIntent } from './types';
 
 const KIND_UTIS: Record<FileKind, string[]> = {
@@ -135,15 +136,15 @@ function runMdfind(dir: string, query: string, limit = 1500): Promise<string[]> 
 
 async function rank(paths: string[], intent: SearchIntent, limit: number): Promise<FoundFile[]> {
   const home = os.homedir();
-  const kws = intent.keywords.map((k) => stem(escapeTerm(k)).toLowerCase()).filter(Boolean);
+  const kws = intent.keywords.map((k) => normalizeName(stem(escapeTerm(k)))).filter(Boolean);
   const now = Date.now();
   const scored = await Promise.all(
     paths.slice(0, 800).map(async (p) => {
       try {
         const st = await fs.stat(p);
         const name = path.basename(p);
-        const lowerName = name.toLowerCase();
-        const lowerPath = p.toLowerCase();
+        const lowerName = normalizeName(name);
+        const lowerPath = normalizeName(p);
         let score = 0;
         let nameHits = 0;
         for (const k of kws) {
@@ -207,12 +208,14 @@ export async function searchFiles(
     seen.add(key);
     // Name matches are the strongest signal, so fetch them separately and put them first;
     // otherwise they can be crowded out by files that only mention the word inside.
+    // The folder scan also covers the case where Spotlight is off or still re-indexing.
     const nameQuery = buildQuery(intent, { ...a, nameOnly: true });
-    const [byName, byAny] = await Promise.all([
+    const [byName, byScan, byAny] = await Promise.all([
       nameQuery ? runMdfind(dir, nameQuery, 400) : Promise.resolve([]),
+      scanFiles(intent, { ...a, folder: dir === home ? null : dir }, stem),
       runMdfind(dir, query),
     ]);
-    const paths = [...new Set([...byName, ...byAny])];
+    const paths = [...new Set([...byName, ...byScan, ...byAny])];
     if (paths.length) return { results: await rank(paths, intent, limit), relaxed: i > 0 };
   }
   return { results: [], relaxed: false };

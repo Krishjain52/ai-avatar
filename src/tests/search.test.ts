@@ -74,3 +74,15 @@ test('document type includes PDFs but not plain text/code', () => {
   assert.ok(q.includes('com.adobe.pdf'));
   assert.ok(!q.includes('public.plain-text'));
 });
+
+test('normalizeName ignores case, spaces and separators', async () => {
+  const { normalizeName } = await import('../main/scan');
+  assert.equal(normalizeName('PAN Card_final.JPG'), 'pancardfinaljpg');
+  assert.ok(normalizeName('PAN Card').includes(normalizeName('pancard')));
+});
+
+test('heuristic drops filler words like "but only"', () => {
+  const i = heuristicIntent('data spectrum calls but only the spreadsheet', NOW);
+  assert.deepEqual(i.keywords, ['data', 'spectrum', 'calls']);
+  assert.deepEqual(i.kinds, ['spreadsheet']);
+});

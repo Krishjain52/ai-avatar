@@ -10,7 +10,11 @@ const STOPWORDS = new Set(
     'stuff something which what need want please can you could called named about one ones took made ' +
     'saved downloaded sent received created edited have had there all every kind sort type like ' +
     'latest new old recent recently last past ago folder photo photos picture pictures pic pics ' +
-    'image images document documents doc docs video videos').split(' '),
+    'image images document documents doc docs video videos ' +
+    'but only just not also too then than so very really maybe mine our your his her their them ' +
+    'we they he she him be been being do does did done will would should may might must into onto ' +
+    'over under as by if when while until again still yet more most less other same such own here ' +
+    'now how why who whom whose think remember somewhere maybe exactly actually named titled').split(' '),
 );
 
 const KIND_PATTERNS: Array<[RegExp, FileKind]> = [
