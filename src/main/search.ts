@@ -130,7 +130,7 @@ function runMdfind(dir: string, query: string, limit = 1500): Promise<string[]> 
       }
     });
     proc.on('close', () => {
-      if (buf && !isExcluded(buf)) out.push(buf);
+      if (!done && buf && !isExcluded(buf)) out.push(buf);
       finish();
     });
     proc.on('error', finish);
