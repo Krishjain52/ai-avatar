@@ -275,6 +275,23 @@ declare const api: AvatarApi;
     if (e.key === 'Escape' && state !== 'searching' && state !== 'sleeping') void sleep();
   });
 
+  // Arrow keys: input ↓ goes to the first result, ↑/↓ move between results, ↑ on the first returns to the input.
+  document.addEventListener('keydown', (e) => {
+    if (state !== 'results' || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+    const items = [...list.children] as HTMLElement[];
+    const i = items.indexOf(document.activeElement as HTMLElement);
+    if (document.activeElement === input) {
+      if (e.key !== 'ArrowDown' || !items.length) return;
+      e.preventDefault();
+      items[0].focus();
+    } else if (i >= 0) {
+      e.preventDefault();
+      const next = i + (e.key === 'ArrowDown' ? 1 : -1);
+      if (next < 0) input.focus();
+      else items[Math.min(next, items.length - 1)].focus();
+    }
+  });
+
   // Let clicks pass through the transparent parts of the window to the desktop.
   let through = true;
   document.addEventListener('mousemove', (e) => {
