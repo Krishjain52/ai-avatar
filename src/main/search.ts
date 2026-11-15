@@ -120,6 +120,7 @@ function runMdfind(dir: string, query: string, limit = 1500): Promise<string[]> 
     const timer = setTimeout(finish, 10_000);
     proc.stdout.setEncoding('utf8');
     proc.stdout.on('data', (chunk: string) => {
+      if (done) return; // already resolved; don't grow an array the caller now owns
       buf += chunk;
       const lines = buf.split('\n');
       buf = lines.pop() ?? '';
