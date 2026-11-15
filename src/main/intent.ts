@@ -167,13 +167,14 @@ export function sanitizeIntent(raw: unknown): SearchIntent {
   return {
     keywords: cleanKeywords(strings(o.keywords)),
     kinds: [...new Set(kinds)],
-    dateFrom: date(o.dateFrom),
-    dateTo: date(o.dateTo),
+    dateFrom,
+    dateTo,
     folder,
   };
 }
 
-const hasFilters = (i: SearchIntent) => i.keywords.length > 0 || i.kinds.length > 0 || i.dateFrom !== null;
+const hasFilters = (i: SearchIntent) =>
+  i.keywords.length > 0 || i.kinds.length > 0 || i.dateFrom !== null || i.dateTo !== null;
 
 function parseJsonText(text: string): unknown {
   return JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, ''));
