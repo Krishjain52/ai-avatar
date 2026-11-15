@@ -232,7 +232,9 @@ body[data-state="results"] #results { display: block; }
   border-radius: 8px;
   cursor: pointer;
 }
-.result:hover { background: var(--hover); }
+.result:hover, .result:focus { background: var(--hover); }
+.result:focus { outline: none; }
+.result:focus-visible { box-shadow: inset 0 0 0 1px var(--accent); }
 .result img { width: 30px; height: 30px; flex: none; object-fit: cover; border-radius: 6px; }
 .meta { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .meta strong, .meta span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
