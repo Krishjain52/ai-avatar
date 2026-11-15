@@ -87,3 +87,31 @@ test('heuristic drops filler words like "but only"', () => {
   assert.deepEqual(i.keywords, ['data', 'spectrum', 'calls']);
   assert.deepEqual(i.kinds, ['spreadsheet']);
 });
+
+test('heuristic: month names become that month', () => {
+  const march = heuristicIntent('photos from march', NOW);
+  assert.equal(march.dateFrom, '2026-03-01');
+  assert.equal(march.dateTo, '2026-03-31');
+  assert.deepEqual(march.keywords, []);
+  const dec = heuristicIntent('invoice from december', NOW); // later than Nov → last year
+  assert.equal(dec.dateFrom, '2025-12-01');
+  assert.equal(dec.dateTo, '2025-12-31');
+  assert.deepEqual(dec.keywords, ['invoice']);
+  const feb = heuristicIntent('tax pdf feb 2024', NOW);
+  assert.equal(feb.dateFrom, '2024-02-01');
+  assert.equal(feb.dateTo, '2024-02-29');
+  assert.deepEqual(feb.keywords, ['tax']);
+});
+
+test('heuristic: a bare "may" is not a month', () => {
+  const i = heuristicIntent('the notes that may be on my desktop', NOW);
+  assert.equal(i.dateFrom, null);
+  assert.equal(i.folder, 'desktop');
+});
+
+test('sanitize rejects impossible dates and swaps reversed ranges', () => {
+  assert.equal(sanitizeIntent({ dateFrom: '2026-02-30' }).dateFrom, null);
+  const i = sanitizeIntent({ dateFrom: '2026-05-31', dateTo: '2026-05-01' });
+  assert.equal(i.dateFrom, '2026-05-01');
+  assert.equal(i.dateTo, '2026-05-31');
+});
