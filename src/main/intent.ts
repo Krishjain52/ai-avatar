@@ -153,7 +153,12 @@ const SCHEMA = {
 export function sanitizeIntent(raw: unknown): SearchIntent {
   const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
   const strings = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
-  const date = (v: unknown) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
+  // Must be a real calendar day: "2026-02-30" would make the Spotlight query fail.
+  const date = (v: unknown) =>
+    typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && isoDate(new Date(`${v}T00:00:00`)) === v ? v : null;
+  let dateFrom = date(o.dateFrom);
+  let dateTo = date(o.dateTo);
+  if (dateFrom && dateTo && dateFrom > dateTo) [dateFrom, dateTo] = [dateTo, dateFrom];
   const kinds = strings(o.kinds)
     .map((k) => k.toLowerCase())
     .filter((k): k is FileKind => (FILE_KINDS as readonly string[]).includes(k));
