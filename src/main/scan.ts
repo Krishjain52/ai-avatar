@@ -44,15 +44,23 @@ export function normalizeName(s: string): string {
 }
 
 let cache: { at: number; entries: Entry[] } | null = null;
+let inFlight: Promise<Entry[]> | null = null;
 
-async function scanAll(home = os.homedir()): Promise<Entry[]> {
-  if (cache && Date.now() - cache.at < CACHE_MS) return cache.entries;
+/** Cached for a minute; callers that arrive mid-scan share the same walk. */
+function scanAll(home = os.homedir()): Promise<Entry[]> {
+  if (cache && Date.now() - cache.at < CACHE_MS) return Promise.resolve(cache.entries);
+  inFlight ??= walk(home).finally(() => (inFlight = null));
+  return inFlight;
+}
+
+async function walk(home: string): Promise<Entry[]> {
   const entries: Entry[] = [];
   const deadline = Date.now() + TIME_BUDGET_MS;
   // Whole home folder (minus Library/Applications) plus iCloud Drive.
   const queue: Array<[string, number]> = [[home, 0], [path.join(home, ICLOUD_DIR), 1]];
-  while (queue.length && entries.length < MAX_ENTRIES && Date.now() < deadline) {
-    const [dir, depth] = queue.shift()!;
+  // Read from an index instead of shift(), which is O(n) on a queue of thousands of folders.
+  for (let qi = 0; qi < queue.length && entries.length < MAX_ENTRIES && Date.now() < deadline; qi++) {
+    const [dir, depth] = queue[qi];
     let dirents;
     try {
       dirents = await fs.readdir(dir, { withFileTypes: true });
