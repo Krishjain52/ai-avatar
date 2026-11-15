@@ -207,7 +207,14 @@ declare const api: AvatarApi;
         });
 
         li.append(img, text, reveal);
+        li.tabIndex = 0;
         li.addEventListener('click', () => api.open(r.path));
+        li.addEventListener('keydown', (e) => {
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
+          if (e.metaKey) api.reveal(r.path);
+          else api.open(r.path);
+        });
         return li;
       }),
     );
