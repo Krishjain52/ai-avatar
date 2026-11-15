@@ -96,6 +96,16 @@ export function heuristicIntent(text: string, now = new Date()): SearchIntent {
       break;
     }
   }
+  const month = dateFrom ? null : t.match(MONTH_RE);
+  if (month) {
+    const m = MONTH_KEYS.indexOf((month[1] ?? month[3]).slice(0, 3));
+    const yearText = month[2] ?? month[4];
+    // No year given: the most recent such month, so "december" in November means last December.
+    const yr = yearText ? Number(yearText) : m > mo ? y - 1 : y;
+    dateFrom = isoDate(new Date(yr, m, 1));
+    dateTo = isoDate(new Date(yr, m + 1, 0));
+    t = t.replace(month[0], ' ');
+  }
   const year = t.match(/\b(19|20)\d{2}\b/);
   if (year && !dateFrom) {
     dateFrom = `${year[0]}-01-01`;
