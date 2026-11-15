@@ -14,8 +14,14 @@ const STOPWORDS = new Set(
     'but only just not also too then than so very really maybe mine our your his her their them ' +
     'we they he she him be been being do does did done will would should may might must into onto ' +
     'over under as by if when while until again still yet more most less other same such own here ' +
-    'now how why who whom whose think remember somewhere maybe exactly actually named titled').split(' '),
+    'now how why who whom whose think remember somewhere exactly actually titled during').split(' '),
 );
+
+const MONTH = '(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
+// "in march", "from dec 2024", "march 2025". A bare "may" is too common a word, so a month
+// needs a preposition before it or a year after it.
+const MONTH_RE = new RegExp(`\\b(?:(?:in|from|during|of)\\s+${MONTH}(?:\\s+((?:19|20)\\d{2}))?|${MONTH}\\s+((?:19|20)\\d{2}))\\b`);
+const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
 const KIND_PATTERNS: Array<[RegExp, FileKind]> = [
   [/\b(photos?|pictures?|pics?|images?|screenshots?|selfies?|wallpapers?|jpe?gs?|pngs?|heic)\b/, 'image'],
