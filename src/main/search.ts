@@ -147,7 +147,8 @@ async function rank(paths: string[], intent: SearchIntent, limit: number): Promi
         const st = await fs.stat(p);
         const name = path.basename(p);
         const lowerName = normalizeName(name);
-        const lowerPath = normalizeName(p);
+        // Relative to home, so a keyword that's part of the username doesn't match every file.
+        const lowerPath = normalizeName(p.startsWith(home + '/') ? p.slice(home.length) : p);
         let score = 0;
         let nameHits = 0;
         for (const k of kws) {
