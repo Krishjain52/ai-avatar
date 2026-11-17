@@ -13,6 +13,10 @@ interface AvatarApi {
   open(p: string): void;
   reveal(p: string): void;
   showMenu(): void;
+  pickSpot(): Promise<{ dx: number; dy: number } | null>;
+  cancelPick(): void;
+  walk(): Promise<void>;
+  onStartWalk(cb: () => void): void;
 }
 declare const api: AvatarApi;
 
