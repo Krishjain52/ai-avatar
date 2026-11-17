@@ -54,13 +54,15 @@ function cornerAnchor(): Point {
   return { x: wa.x + wa.width - s.w / 2 - 12, y: wa.y + wa.height - (s.h - s.avatarTop) - 12 };
 }
 
-function glide(target: Point, ms = 500): Promise<void> {
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+function glide(target: Point, ms = 500, ease = easeOut): Promise<void> {
   return new Promise((resolve) => {
     const from = { ...anchor };
     const t0 = Date.now();
     const step = () => {
       const t = Math.min(1, (Date.now() - t0) / ms);
-      const e = 1 - Math.pow(1 - t, 3);
+      const e = ease(t);
       anchor = { x: from.x + (target.x - from.x) * e, y: from.y + (target.y - from.y) * e };
       win?.setBounds(boundsFor(anchor, mode));
       if (t < 1) setTimeout(step, 16);
