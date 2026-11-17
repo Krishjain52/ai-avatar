@@ -67,7 +67,15 @@ declare const api: AvatarApi;
     open: eye([[7, 5], [7, 10], [8, 5], [8, 10]]),
     closed: eye([[8, 4], [8, 5], [8, 10], [8, 11]]),
     up: eye([[6, 5], [6, 10], [7, 5], [7, 10]]),
+    // Looking the way he's walking.
+    left: eye([[7, 4], [7, 9], [8, 4], [8, 9]]),
+    right: eye([[7, 6], [7, 11], [8, 6], [8, 11]]),
   };
+  // Walk cycle: replacement rows 18-19 (legs + shoes), lifting one foot at a time.
+  const STEPS: Array<[string, string]> = [
+    ['....pp...oooo...', '...oooo.........'],
+    ['...oooo...pp....', '.........oooo...'],
+  ];
   const MOUTHS = {
     o: mouth([[10, 7], [10, 8]]),
     smile: mouth([[10, 6], [10, 9], [11, 7], [11, 8]]),
