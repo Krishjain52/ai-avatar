@@ -208,6 +208,32 @@ ipcMain.handle('go-home', async () => {
   focusWindow();
 });
 
+ipcMain.on('spot-picked', (e, cx: unknown, cy: unknown) => {
+  const o = BrowserWindow.fromWebContents(e.sender);
+  if (!o || !overlays.includes(o) || typeof cx !== 'number' || typeof cy !== 'number') return;
+  const b = o.getBounds();
+  finishPick({ x: b.x + cx, y: b.y + cy });
+});
+ipcMain.on('pick-cancel', () => finishPick(null));
+
+/** Waits for a tap, then returns which way he'll have to walk (or null if cancelled). */
+ipcMain.handle('pick-spot', async () => {
+  place('compact', anchor);
+  const p = await pickSpot();
+  if (!p) return null;
+  // His feet land where you tapped.
+  walkTarget = clampAnchor({ x: p.x, y: p.y - AVATAR_H }, 'compact');
+  return { dx: walkTarget.x - anchor.x, dy: walkTarget.y - anchor.y };
+});
+
+ipcMain.handle('walk', async () => {
+  const target = walkTarget;
+  walkTarget = null;
+  if (!target) return;
+  const dist = Math.hypot(target.x - anchor.x, target.y - anchor.y);
+  await glide(target, clamp(dist / WALK_PX_PER_MS, 250, 3500), (t) => t);
+});
+
 ipcMain.handle('search', async (_e, text: unknown): Promise<SearchResponse> => {
   if (typeof text !== 'string' || !text.trim()) {
     return { results: [], source: '', relaxed: false, error: 'Type what you are looking for.' };
