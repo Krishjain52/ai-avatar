@@ -83,6 +83,8 @@ body[data-state="awake"] #sprite { animation: idle 1.2s steps(1) infinite; }
 body[data-state="searching"] #sprite { animation: run 0.3s steps(1) infinite; }
 body[data-state="results"] #sprite { animation: hop 0.6s steps(1) 2; }
 #avatar.waking #sprite { animation: hop 0.6s steps(1) 1; }
+body[data-state="picking"] #sprite { animation: idle 0.8s steps(1) infinite; }
+body[data-state="walking"] #sprite { animation: run 0.3s steps(1) infinite; }
 
 @keyframes doze { 50% { transform: translateY(4px); } }
 @keyframes idle { 50% { transform: translateY(-4px); } }
