@@ -72,6 +72,67 @@ function glide(target: Point, ms = 500, ease = easeOut): Promise<void> {
   });
 }
 
+// ── "Walk somewhere": a see-through overlay on every display catches one tap. ──
+const AVATAR_H = 80;
+const WALK_PX_PER_MS = 0.35; // a stroll, not a teleport
+let overlays: BrowserWindow[] = [];
+let pickResolve: ((p: Point | null) => void) | null = null;
+let walkTarget: Point | null = null;
+
+function finishPick(p: Point | null) {
+  const resolve = pickResolve;
+  pickResolve = null;
+  for (const o of overlays) if (!o.isDestroyed()) o.destroy();
+  overlays = [];
+  win?.setAlwaysOnTop(true, 'floating');
+  resolve?.(p);
+}
+
+/** Shows the overlays and resolves with the tapped screen point, or null if cancelled. */
+function pickSpot(): Promise<Point | null> {
+  finishPick(null); // only one pick at a time
+  return new Promise((resolve) => {
+    pickResolve = resolve;
+    // Keep the avatar above the overlays so tapping him again can cancel.
+    win?.setAlwaysOnTop(true, 'pop-up-menu');
+    const here = screen.getDisplayNearestPoint({ x: Math.round(anchor.x), y: Math.round(anchor.y) });
+    for (const d of screen.getAllDisplays()) {
+      const o = new BrowserWindow({
+        ...d.bounds,
+        show: false,
+        transparent: true,
+        frame: false,
+        resizable: false,
+        movable: false,
+        hasShadow: false,
+        skipTaskbar: true,
+        fullscreenable: false,
+        enableLargerThanScreen: true,
+        backgroundColor: '#00000000',
+        webPreferences: {
+          preload: path.join(__dirname, '../preload/overlay-preload.js'),
+          contextIsolation: true,
+          sandbox: true,
+          nodeIntegration: false,
+        },
+      });
+      o.setAlwaysOnTop(true, 'floating');
+      o.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+      o.once('ready-to-show', () => {
+        if (o.isDestroyed()) return;
+        o.show();
+        // Focus the overlay he's on so Esc works straight away.
+        if (d.id === here.id) {
+          app.focus({ steal: true });
+          o.focus();
+        }
+      });
+      void o.loadFile(path.join(__dirname, '../../static/overlay.html'));
+      overlays.push(o);
+    }
+  });
+}
+
 function focusWindow() {
   app.focus({ steal: true });
   win?.focus();
