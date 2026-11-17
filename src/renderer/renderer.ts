@@ -91,10 +91,13 @@ declare const api: AvatarApi;
     searching: ['up', 'flat'],
     results: ['open', 'grin'],
     notfound: ['open', 'sad'],
+    picking: ['up', 'smile'],
+    walking: ['open', 'smile'],
   };
 
-  function drawSprite(eyes: Eyes, mouth: Mouth) {
+  function drawSprite(eyes: Eyes, mouth: Mouth, legs?: [string, string]) {
     const grid = BASE.map((row) => row.split(''));
+    if (legs) [grid[18], grid[19]] = [legs[0].split(''), legs[1].split('')];
     for (const [y, x, c] of [...EYES[eyes], ...MOUTHS[mouth]]) grid[y][x] = c;
     let svg = '';
     grid.forEach((row, y) => {
