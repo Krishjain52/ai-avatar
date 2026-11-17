@@ -11,7 +11,8 @@ npm start
 
 - **Tap** the avatar to wake him; tap again or press **Esc** to put him back to sleep.
 - **Drag** him anywhere on screen.
-- **Right-click** him to quit.
+- **Double-tap** him, then tap anywhere on screen, and he walks there. Esc, right-click or tapping him again cancels. Also in the right-click menu as **Walk somewhere…**.
+- **Right-click** him for the menu (walk somewhere, quit).
 - Click a result to open it, or **DIR** to show it in Finder.
 
 ## Making the search smart (free)
