@@ -305,7 +305,7 @@ declare const api: AvatarApi;
     if (!start) return;
     // Button no longer held (the release happened somewhere we didn't see): stop, don't follow the cursor.
     if ((e.buttons & 1) === 0) return endDrag();
-    if (state === 'searching') return;
+    if (busy()) return;
     if (!dragging && Math.hypot(e.screenX - start.x, e.screenY - start.y) > 4) dragging = true;
     if (dragging) {
       api.dragBy(e.screenX - last.x, e.screenY - last.y);
