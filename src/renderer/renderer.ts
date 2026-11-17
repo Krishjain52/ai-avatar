@@ -316,7 +316,7 @@ declare const api: AvatarApi;
     if (!start || e.button !== 0) return;
     const wasDrag = dragging;
     endDrag();
-    if (!wasDrag) onAvatarClick();
+    if (!wasDrag) onTap();
   });
   avatar.addEventListener('pointercancel', endDrag);
   avatar.addEventListener('lostpointercapture', endDrag);
