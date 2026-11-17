@@ -21,7 +21,7 @@ interface AvatarApi {
 declare const api: AvatarApi;
 
 (() => {
-  type State = 'sleeping' | 'awake' | 'searching' | 'results' | 'notfound';
+  type State = 'sleeping' | 'awake' | 'searching' | 'results' | 'notfound' | 'picking' | 'walking';
 
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const avatar = $<HTMLDivElement>('avatar');
