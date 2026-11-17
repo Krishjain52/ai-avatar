@@ -11,4 +11,8 @@ contextBridge.exposeInMainWorld('api', {
   open: (p: string) => ipcRenderer.send('open-file', p),
   reveal: (p: string) => ipcRenderer.send('reveal-file', p),
   showMenu: () => ipcRenderer.send('show-menu'),
+  pickSpot: () => ipcRenderer.invoke('pick-spot'),
+  cancelPick: () => ipcRenderer.send('pick-cancel'),
+  walk: () => ipcRenderer.invoke('walk'),
+  onStartWalk: (cb: () => void) => ipcRenderer.on('start-walk', () => cb()),
 });
