@@ -240,6 +240,52 @@ declare const api: AvatarApi;
     else if (state !== 'searching') void sleep();
   }
 
+  const busy = () => state === 'searching' || state === 'picking' || state === 'walking';
+
+  /** Double-tap (or menu): wait for a tap anywhere on screen, then walk there and carry on as before. */
+  async function travel() {
+    if (busy()) return;
+    const before = state;
+    const wasExpanded = document.body.classList.contains('expanded');
+    setState('picking');
+    setLayout('compact');
+    const move = await api.pickSpot();
+    if (move) {
+      setState('walking');
+      const eyes: Eyes = Math.abs(move.dx) < 8 ? 'open' : move.dx < 0 ? 'left' : 'right';
+      let frame = 0;
+      const step = () => drawSprite(eyes, 'smile', STEPS[frame++ % STEPS.length]);
+      step();
+      const timer = window.setInterval(step, 150);
+      await api.walk();
+      clearInterval(timer);
+    }
+    if (wasExpanded) {
+      await api.setMode('expanded');
+      setLayout('expanded');
+    }
+    setState(before);
+    if (wasExpanded) input.focus();
+  }
+
+  // One tap waits briefly in case a second tap follows.
+  let tapTimer: number | undefined;
+  function onTap() {
+    if (state === 'picking') return api.cancelPick(); // tap him again to call it off
+    if (busy()) return;
+    if (tapTimer !== undefined) {
+      clearTimeout(tapTimer);
+      tapTimer = undefined;
+      void travel();
+      return;
+    }
+    tapTimer = window.setTimeout(() => {
+      tapTimer = undefined;
+      onAvatarClick();
+    }, 260);
+  }
+  api.onStartWalk(() => void travel());
+
   // Click vs drag on the avatar. He only moves while the left button is held down on him.
   let start: { x: number; y: number } | null = null;
   let last = { x: 0, y: 0 };
