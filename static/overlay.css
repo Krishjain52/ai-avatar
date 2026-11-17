@@ -1,0 +1,36 @@
+:root {
+  --panel: rgba(255, 255, 255, 0.96);
+  --text: #1f2328;
+  --shadow: 0 6px 20px rgba(15, 23, 42, 0.16), 0 1px 3px rgba(15, 23, 42, 0.10);
+  --tint: rgba(47, 140, 154, 0.06); /* faint wash so it's clear a tap won't reach the app below */
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --panel: rgba(32, 34, 38, 0.96);
+    --text: #eceef1;
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.35);
+  }
+}
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--tint);
+  cursor: crosshair;
+  user-select: none;
+  font: 12px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+}
+#hint {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+#hint[hidden] { display: none; }
