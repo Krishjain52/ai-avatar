@@ -261,7 +261,11 @@ ipcMain.on('reveal-file', (_e, p: unknown) => {
 
 ipcMain.on('show-menu', () => {
   if (!win) return;
-  Menu.buildFromTemplate([{ label: 'Quit AI Avatar', click: () => app.quit() }]).popup({ window: win });
+  Menu.buildFromTemplate([
+    { label: 'Walk somewhere…', click: () => win?.webContents.send('start-walk') },
+    { type: 'separator' },
+    { label: 'Quit AI Avatar', click: () => app.quit() },
+  ]).popup({ window: win });
 });
 
 app.whenReady().then(() => {
