@@ -333,7 +333,9 @@ declare const api: AvatarApi;
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && state !== 'searching' && state !== 'sleeping') void sleep();
+    if (e.key !== 'Escape') return;
+    if (state === 'picking') api.cancelPick();
+    else if (!busy() && state !== 'sleeping') void sleep();
   });
 
   // Arrow keys: input ↓ goes to the first result, ↑/↓ move between results, ↑ on the first returns to the input.
